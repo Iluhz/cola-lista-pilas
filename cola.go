@@ -1,0 +1,87 @@
+package main
+
+import "fmt"
+
+type Client struct {
+	Name string
+	VIP  bool
+}
+
+type Queue struct {
+	items []Client
+}
+
+func (q *Queue) Enqueue(c Client) {
+	if c.VIP {
+		q.items = append([]Client{c}, q.items...)
+	} else {
+		q.items = append(q.items, c)
+	}
+}
+
+func (q *Queue) Dequeue() Client {
+	if len(q.items) == 0 {
+		return Client{}
+	}
+	first := q.items[0]
+	q.items = q.items[1:]
+	return first
+}
+
+func (q *Queue) Peek() Client {
+	if len(q.items) == 0 {
+		return Client{}
+	}
+	return q.items[0]
+}
+
+type Bank struct {
+	line Queue
+}
+
+func (b *Bank) Arrive(name string, vip bool) {
+	b.line.Enqueue(Client{Name: name, VIP: vip})
+}
+
+func (b *Bank) Attend() {
+	client := b.line.Dequeue()
+	if client.Name != "" {
+		label := ""
+		if client.VIP {
+			label = " [VIP]"
+		}
+		fmt.Println("Atendiendo a:", client.Name+label)
+	} else {
+		fmt.Println("No hay clientes")
+	}
+}
+
+func (b *Bank) Next() {
+	client := b.line.Peek()
+	if client.Name != "" {
+		label := ""
+		if client.VIP {
+			label = " [VIP]"
+		}
+		fmt.Println("Siguiente en fila:", client.Name+label)
+	} else {
+		fmt.Println("La fila está vacía")
+	}
+}
+
+func main() {
+	bank := Bank{}
+
+	bank.Arrive("Ana", false)
+	bank.Arrive("Luis", false)
+	bank.Arrive("Pedro", true)
+
+	fmt.Println("--- Ver siguiente sin atender ---")
+	bank.Next()
+
+	fmt.Println("\n--- Atendiendo clientes ---")
+	bank.Attend()
+	bank.Attend()
+	bank.Attend()
+	bank.Attend()
+}
